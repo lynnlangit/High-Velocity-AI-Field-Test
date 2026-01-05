@@ -64,3 +64,5 @@ The application now serves as a full-lifecycle tool:
 
 This architecture demonstrates a reusable blueprint for "Trustable AI" in professional domains  . 
 By combining real-time safety filters (Hot Path) with deep retrospective analysis (Learning Loop), the system provides value both during and after the event.
+
+<img src="https://github.com/lynnlangit/High-Velocity-AI-Field-Test/blob/main/POC-arch.png">
