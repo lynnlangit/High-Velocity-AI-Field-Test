@@ -65,5 +65,5 @@ If the new build glitches (e.g., UI freezes, Audio lag distracts driver):
 ## Preparation Checklist (Pre-Track Day)
 
 [ ] Dependency Freeze: npm ci and cache all node_modules offline.  
-[ ] Data Pack: Ensure the RACING_PEDAGOGY vector DB is hardcoded/cached; do not rely on fetching it from a CMS.
-[ ] Hardware Mock: Ensure the "Virtual Streamer" script accurately replicates the exact JSON packet structure of the race car devices.
+[ ] Data Pack: Ensure the RACING_PEDAGOGY vector DB is hardcoded/cached; do not rely on fetching it from a CMS.  
+[ ] Hardware Mock: Ensure the "Virtual Streamer" script accurately replicates the exact JSON packet structure of the race car devices.  
