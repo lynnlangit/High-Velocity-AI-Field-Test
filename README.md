@@ -1,5 +1,5 @@
 # High-Velocity-AI-Field-Test
-Gemini at the Race Track
+Gemini at the Race Track - see a version of the app in action --> https://youtu.be/Ho21d39c2bY
 
 ## Gemini Racing Dashboard: v2.5 Architecture Summary
 
