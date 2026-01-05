@@ -62,5 +62,5 @@ The application now serves as a full-lifecycle tool:
 - Monitor: Real-time Squad analysis (Hot/Warm paths).
 - Improve: Automated post-run debriefing.
 
-Generalization: This architecture demonstrates a reusable blueprint for "Trustable AI" in professional domains  . 
+This architecture demonstrates a reusable blueprint for "Trustable AI" in professional domains  . 
 By combining real-time safety filters (Hot Path) with deep retrospective analysis (Learning Loop), the system provides value both during and after the event.
