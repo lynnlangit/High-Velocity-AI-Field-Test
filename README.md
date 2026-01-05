@@ -8,6 +8,8 @@ Status: v2.5 - The Learning Loop & Dynamic Physics
 
 This summary outlines the evolution of the Gemini Racing Dashboard into a complete "Digital Twin." The project validates the capability of Gemini 2.5 Flash and a simulated Edge TPU (Gemini Nano) to function as a cohesive, real-time coaching team ("The Squad") in a high-stakes environment.
 
+<img src="https://github.com/lynnlangit/High-Velocity-AI-Field-Test/blob/main/squad.png" width=600>
+
 1. Architectural Design: The "Squad" Pattern
 
 To solve the conflict between "Instant Reaction" and "Deep Reasoning," we utilized a hybrid multi-agent system.
