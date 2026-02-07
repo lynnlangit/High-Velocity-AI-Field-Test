@@ -30,9 +30,13 @@ const generateMockGeminiMessage = (currentData) => {
 const generateMockDebrief = () => {
     return {
         score: Math.floor(85 + Math.random() * 10),
-        verdict: "Strong pace, but consistency needs work in Sector 2.",
-        primary_issue: "Braking Efficiency",
-        coaching_tip: "You are over-slowing at Turn 1. Trust the aero and carry 5mph more to the apex."
+        verdict: "🏎️ Strong pace, but consistency needs work in Sector 2.",
+        primary_issue: "🛑 Braking Efficiency",
+        action_plan: [
+            "📍 **Landmarks**: You are braking too early. Push to the 2-board.",
+            "🦶 **Pressure**: Attack the pedal faster (0-100% in 0.2s).",
+            "👀 **Vision**: Look for the apex earlier."
+        ]
     };
 };
 
@@ -155,14 +159,20 @@ export const getSessionDebrief = async (logs, speedHistory, apiKey) => {
       REQUIREMENTS:
       1. Analyze the driver's consistency and aggression.
       2. Identify the ROOT CAUSE of the primary issue (not just the symptom).
-      3. Provide 3 SPECIFIC, ACTIONABLE steps to improve on the next lap.
-      
+      3. Provide 3 SPECIFIC, ACTIONABLE steps to improve (use bullet points).
+      4. Use EMOJIS significantly to make the report scannable and engaging.
+
       OUTPUT JSON ONLY:
       {
         "score": 0-100 (integer),
-        "verdict": "One sentence summary of performance.",
-        "primary_issue": "The main technical flaw (e.g. 'Late Braking at Turn 1')",
-        "coaching_tip": "Detailed action plan: 1. Landmark identification. 2. Pedal application technique. 3. Exit vision."
+        "verdict": "One sentence summary with an emoji (e.g. 🏎️).",
+        "primary_issue": "The main flaw with an emoji (e.g. 🛑 Late Braking).",
+        "coaching_tip": "IGNORE THIS FIELD, use action_plan instead.",
+        "action_plan": [
+          "📍 **Step 1**: Detail...",
+          "🦶 **Step 2**: Detail...",
+          "👀 **Step 3**: Detail..."
+        ]
       }
     `;
 

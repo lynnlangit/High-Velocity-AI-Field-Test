@@ -5,47 +5,49 @@ import { getGeminiCoaching, getSessionDebrief, getNanoEvents } from './raceEngin
 
 // --- Components ---
 
+// --- Components ---
+
 const StatusIndicator = ({ label, status, value }) => (
-  <div className="flex items-center justify-between bg-gray-900/50 p-3 rounded border border-gray-800 h-full">
-    <span className="text-xs text-gray-400 font-mono uppercase">{label}</span>
+  <div className="flex items-center justify-between bg-white p-3 rounded border border-gray-200 h-full shadow-sm">
+    <span className="text-xs text-gray-500 font-mono uppercase">{label}</span>
     <div className="flex items-center gap-2">
-      <span className={`text-sm font-bold font-mono ${status === 'active' ? 'text-green-400' : 'text-amber-400'}`}>
+      <span className={`text-sm font-bold font-mono ${status === 'active' ? 'text-emerald-600' : 'text-amber-500'}`}>
         {value || status.toUpperCase()}
       </span>
-      <div className={`w-2 h-2 rounded-full ${status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-amber-500'}`} />
+      <div className={`w-2 h-2 rounded-full ${status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
     </div>
   </div>
 );
 
-// Resized G-Force Meter (Smaller - w-40)
+// Resized G-Force Meter (Light Theme)
 const GForceMeter = ({ x, y }) => (
-  <div className="relative w-40 h-40 bg-gray-900 rounded-full border border-gray-700 flex items-center justify-center transition-all duration-300">
+  <div className="relative w-40 h-40 bg-white rounded-full border border-gray-200 flex items-center justify-center transition-all duration-300 shadow-inner">
     {/* Grid rings */}
-    <div className="absolute w-32 h-32 rounded-full border border-gray-800 opacity-50" />
-    <div className="absolute w-16 h-16 rounded-full border border-gray-800 opacity-50" />
-    <div className="absolute w-[1px] h-full bg-gray-800" />
-    <div className="absolute h-[1px] w-full bg-gray-800" />
+    <div className="absolute w-32 h-32 rounded-full border border-gray-300 opacity-50" />
+    <div className="absolute w-16 h-16 rounded-full border border-gray-300 opacity-50" />
+    <div className="absolute w-[1px] h-full bg-gray-300" />
+    <div className="absolute h-[1px] w-full bg-gray-300" />
 
     {/* The Dot */}
     <div
-      className="absolute w-4 h-4 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.8)] transition-all duration-75 ease-linear"
+      className="absolute w-4 h-4 bg-blue-600 rounded-full shadow-lg transition-all duration-75 ease-linear border border-white"
       style={{
         transform: `translate(${x * 50}px, ${y * -50}px)`
       }}
     />
-    <span className="absolute bottom-2 text-[10px] text-gray-500 font-mono">1.5G</span>
+    <span className="absolute bottom-2 text-[10px] text-gray-400 font-mono">1.5G</span>
   </div>
 );
 
-// Resized Telemetry Bar (Larger Container in parent)
+// Resized Telemetry Bar (Light Theme)
 const TelemetryBar = ({ label, value, max, color = "bg-blue-500" }) => (
   <div className="flex flex-col gap-2 w-full">
-    <div className="flex justify-between text-base font-mono text-gray-400 uppercase">
+    <div className="flex justify-between text-base font-mono text-gray-600 uppercase">
       <span>{label}</span>
-      <span className="pl-4">{Math.round(value)}%</span>
+      <span className="pl-4 font-bold">{Math.round(value)}%</span>
     </div>
-    {/* Transparent background for cleaner UI */}
-    <div className="h-6 w-full bg-gray-700/20 rounded-full overflow-hidden">
+    {/* Light background for cleaner UI */}
+    <div className="h-6 w-full bg-gray-200 rounded-full overflow-hidden border border-gray-100">
       <div
         className={`h-full ${color} transition-all duration-75 ease-out`}
         style={{ width: `${(value / max) * 100}%` }}
@@ -257,37 +259,37 @@ export default function HighVelocityDashboard() {
       agent: data.agent,
       role: data.role,
       msg: data.msg,
-      color: 'text-gray-400',
-      border: 'border-gray-600',
-      bg: 'bg-gray-900/50'
+      color: 'text-gray-600',
+      border: 'border-gray-200',
+      bg: 'bg-white shadow-sm'
     };
 
     if (data.agent === 'AJ') {
-      styles.color = 'text-purple-400';
-      styles.border = 'border-purple-500';
-      styles.bg = 'bg-purple-900/20';
+      styles.color = 'text-purple-700';
+      styles.border = 'border-purple-200';
+      styles.bg = 'bg-purple-50 shadow-sm';
     } else if (data.agent === 'ROSS') {
-      styles.color = 'text-blue-400';
-      styles.border = 'border-blue-500';
-      styles.bg = 'bg-blue-900/20';
+      styles.color = 'text-blue-700';
+      styles.border = 'border-blue-200';
+      styles.bg = 'bg-blue-50 shadow-sm';
     } else if (data.agent === 'GEMINI') {
-      styles.color = 'text-yellow-400';
-      styles.border = 'border-yellow-500';
-      styles.bg = 'bg-yellow-900/10';
+      styles.color = 'text-amber-700';
+      styles.border = 'border-amber-200';
+      styles.bg = 'bg-amber-50 shadow-sm';
     } else if (data.agent === 'NANO') {
-      styles.color = 'text-emerald-400';
-      styles.border = 'border-emerald-500';
-      styles.bg = 'bg-emerald-900/20';
+      styles.color = 'text-emerald-700';
+      styles.border = 'border-emerald-200';
+      styles.bg = 'bg-emerald-50 shadow-sm';
     } else if (data.agent === 'SYSTEM') {
-      styles.color = 'text-gray-400';
-      styles.border = 'border-gray-600';
-      styles.bg = 'bg-gray-900/50';
+      styles.color = 'text-gray-500';
+      styles.border = 'border-gray-200';
+      styles.bg = 'bg-gray-50 shadow-sm';
     }
 
     if (data.priority === 'high') {
-      styles.border = 'border-red-500';
-      styles.bg = 'bg-red-900/20';
-      styles.color = 'text-red-400';
+      styles.border = 'border-red-300';
+      styles.bg = 'bg-red-50 shadow-md';
+      styles.color = 'text-red-700 font-bold';
     }
 
     const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
@@ -477,91 +479,110 @@ export default function HighVelocityDashboard() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-black text-gray-100 font-sans selection:bg-blue-500/30 flex flex-col overflow-hidden relative">
+    <div className="w-full min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-500/30 flex flex-col overflow-hidden relative">
 
       {/* --- DEBRIEF MODAL --- */}
       {showDebrief && (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-8 animate-in fade-in duration-300">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-full">
+        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-8 animate-in fade-in duration-300">
+          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
             {/* Modal Header */}
-            <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-950">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400">
+                <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
                   <Zap size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold tracking-widest text-white">RACE ENGINEER DEBRIEF</h2>
+                  <h2 className="text-xl font-bold tracking-widest text-slate-800">RACE ENGINEER DEBRIEF</h2>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] bg-purple-900/50 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30">GEMINI PRO ANALYSIS</span>
+                    <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded border border-purple-200 font-bold">GEMINI 2.5 PRO ANALYSIS</span>
                     <span className="text-[10px] text-gray-500 font-mono">{new Date().toLocaleTimeString()}</span>
                   </div>
                 </div>
               </div>
-              <button onClick={() => setShowDebrief(false)} className="text-gray-500 hover:text-white transition-colors">
+              <button onClick={() => setShowDebrief(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <X size={24} />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-8 overflow-y-auto">
+            <div className="p-8 overflow-y-auto bg-white">
               {isDebriefLoading ? (
-                <div className="flex flex-col items-center justify-center py-12 gap-4">
-                  <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
-                  <p className="text-sm font-mono text-gray-400 animate-pulse">Aggregating telemetry & synthesizing report...</p>
+                <div className="flex flex-col items-center justify-center py-24 gap-6">
+                  <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+                  <p className="text-sm font-mono text-gray-500 animate-pulse uppercase tracking-widest">Synthesizing race data...</p>
                 </div>
               ) : debriefReport ? (
-                <div className="grid grid-cols-2 gap-8">
-                  {/* Left: Score & Verdict */}
-                  <div className="col-span-2 md:col-span-1 flex flex-col gap-6">
-                    <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 text-center relative overflow-hidden">
-                      <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">Driver Efficiency Score</div>
-                      <div className="text-6xl font-black text-white">{debriefReport.score}</div>
-                      <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 w-full" style={{ opacity: 0.5 }}></div>
+                <div className="grid grid-cols-12 gap-8">
+                  {/* Left Column: Data & Verdict */}
+                  <div className="col-span-12 lg:col-span-5 flex flex-col gap-6">
+                    {/* Score Card */}
+                    <div className="bg-slate-50 rounded-2xl p-8 border border-slate-100 text-center relative overflow-hidden shadow-sm">
+                      <div className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">Driver Efficiency Score</div>
+                      <div className="text-8xl font-black text-slate-800 tracking-tighter">{debriefReport.score}</div>
+                      <div className="absolute bottom-0 left-0 h-1.5 bg-gradient-to-r from-red-500 via-yellow-400 to-emerald-500 w-full opacity-80"></div>
                     </div>
 
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
-                        <MessageSquare size={16} className="text-blue-400" /> COACH'S VERDICT
+                    {/* Verdict Card */}
+                    <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                      <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center gap-2">
+                        <MessageSquare size={14} className="text-blue-500" /> COACH'S VERDICT
                       </h3>
-                      <p className="text-lg text-white font-medium leading-relaxed">
+                      <p className="text-xl text-slate-700 font-medium leading-relaxed">
                         "{debriefReport.verdict}"
                       </p>
                     </div>
-                  </div>
 
-                  {/* Right: Technical Breakdown */}
-                  <div className="col-span-2 md:col-span-1 space-y-6">
-                    <div className="bg-blue-900/10 border border-blue-500/30 rounded-lg p-4">
-                      <h4 className="text-xs font-bold text-blue-400 uppercase mb-2 flex items-center gap-2">
+                    {/* Primary Issue Card */}
+                    <div className="bg-red-50 border border-red-100 rounded-xl p-6">
+                      <h4 className="text-xs font-bold text-red-600 uppercase mb-2 flex items-center gap-2">
                         <Activity size={14} /> PRIMARY FOCUS AREA
                       </h4>
-                      <div className="text-white font-bold text-xl mb-1">{debriefReport.primary_issue}</div>
-                      <div className="text-xs text-blue-300/70">Detected via Squad Logs</div>
+                      <div className="text-slate-800 font-bold text-2xl">{debriefReport.primary_issue}</div>
                     </div>
+                  </div>
 
-                    <div className="bg-green-900/10 border border-green-500/30 rounded-lg p-4">
-                      <h4 className="text-xs font-bold text-green-400 uppercase mb-2 flex items-center gap-2">
-                        <ClipboardList size={14} /> ACTION PLAN
+                  {/* Right Column: Action Plan (The Meat) */}
+                  <div className="col-span-12 lg:col-span-7">
+                    <div className="bg-white border border-gray-200 rounded-2xl p-8 h-full shadow-sm">
+                      <h4 className="text-sm font-bold text-emerald-600 uppercase mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
+                        <ClipboardList size={18} /> ACTION PLAN FOR NEXT SESSION
                       </h4>
-                      <p className="text-sm text-gray-300 leading-relaxed">
-                        {debriefReport.coaching_tip}
-                      </p>
+
+                      {/* Render Action Plan List */}
+                      <div className="space-y-4">
+                        {debriefReport.action_plan && Array.isArray(debriefReport.action_plan) ? (
+                          debriefReport.action_plan.map((step, idx) => (
+                            <div key={idx} className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition-colors">
+                              <div className="text-lg">{/* Emoji is in the string, or we could parse it */}</div>
+                              <div className="text-slate-700 leading-relaxed text-lg">
+                                {/* Simple markdown parsing for bolding */}
+                                {step.split('**').map((part, i) =>
+                                  i % 2 === 1 ? <span key={i} className="font-bold text-slate-900">{part}</span> : part
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          // Fallback for old/mock format
+                          <p className="text-slate-600 whitespace-pre-line leading-relaxed">{debriefReport.coaching_tip}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-center text-red-400">Failed to load report.</div>
+                <div className="text-center text-red-500 py-12">Failed to load report.</div>
               )}
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-gray-950 border-t border-gray-800 flex justify-end">
+            <div className="p-4 bg-slate-50 border-t border-gray-200 flex justify-end">
               <button
                 onClick={() => setShowDebrief(false)}
-                className="px-6 py-2 bg-white text-black font-bold rounded hover:bg-gray-200 transition-colors text-sm uppercase tracking-wide"
+                className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all transform hover:scale-[1.02] shadow-lg text-sm uppercase tracking-wide"
               >
-                Close & New Session
+                Close & Start New Session
               </button>
             </div>
           </div>
@@ -578,38 +599,38 @@ export default function HighVelocityDashboard() {
       />
 
       {/* --- Top Bar: Project Status --- */}
-      <header className="h-14 border-b border-gray-800 bg-gray-950 flex items-center justify-between px-6 z-10">
+      <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-8 z-10 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="bg-blue-600/20 text-blue-400 p-1.5 rounded">
-            <Cpu size={20} />
+          <div className="bg-blue-50 text-blue-600 p-2 rounded-lg">
+            <Cpu size={24} />
           </div>
           <div>
-            <h1 className="text-base font-bold tracking-widest uppercase text-white">H2 AI Sprint // Antigravity</h1>
+            <h1 className="text-lg font-bold tracking-widest uppercase text-slate-900">H2 AI Sprint // Antigravity</h1>
             <p className="text-xs text-gray-500 font-mono tracking-wider">PROJECT: HIGH-VELOCITY AI FIELD TEST</p>
           </div>
         </div>
 
         <div className="flex items-center gap-6">
           <div className="flex flex-col items-end">
-            <span className="text-[10px] text-gray-500 uppercase">System Latency</span>
-            <span className={`font-mono font-bold ${latency > 40 ? 'text-red-400' : 'text-green-400'} pr-1`}>
+            <span className="text-[10px] text-gray-400 uppercase">System Latency</span>
+            <span className={`font-mono font-bold ${latency > 40 ? 'text-red-500' : 'text-emerald-500'} pr-1`}>
               {latency.toFixed(1)}ms
             </span>
           </div>
-          <div className="h-8 w-[1px] bg-gray-800" />
+          <div className="h-8 w-[1px] bg-gray-200" />
 
           {/* Controls */}
           <div className="flex gap-2">
             <button
               onClick={toggleAudio}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded border border-gray-700 font-mono text-xs uppercase tracking-wide transition-colors ${isAudioEnabled ? 'text-blue-400 bg-blue-900/20 border-blue-500/50' : 'text-gray-500 hover:bg-gray-800'}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border font-mono text-xs uppercase tracking-wide transition-colors ${isAudioEnabled ? 'text-blue-600 bg-blue-50 border-blue-200' : 'text-gray-400 border-gray-200 hover:bg-gray-50'}`}
               title="Toggle Voice Synthesis"
             >
               {isAudioEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
             </button>
             <button
               onClick={() => speak("Audio System Check. ONE, TWO, THREE.", "SYSTEM", "high")}
-              className="px-2 py-1.5 rounded border border-gray-700 text-xs font-mono text-gray-500 hover:text-white"
+              className="px-2 py-1.5 rounded-lg border border-gray-200 text-xs font-mono text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
               title="Test Audio"
             >
               TEST
@@ -617,16 +638,16 @@ export default function HighVelocityDashboard() {
 
             <button
               onClick={() => fileInputRef.current.click()}
-              className="flex items-center gap-2 px-3 py-1.5 rounded border border-gray-700 font-mono text-xs uppercase tracking-wide hover:bg-gray-800 transition-colors text-gray-400"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 font-mono text-xs uppercase tracking-wide hover:bg-gray-50 transition-colors text-gray-500"
             >
               <Upload size={14} /> {replayData ? 'CSV Loaded' : 'Load CSV'}
             </button>
 
             <button
               onClick={handleTogglePlay}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded border font-mono text-xs uppercase tracking-wide transition-colors ${isRunning
-                ? 'border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                : 'border-green-500/50 bg-green-500/10 text-green-400 hover:bg-green-500/20'
+              className={`flex items-center gap-2 px-5 py-1.5 rounded-lg border font-mono text-xs uppercase tracking-wide transition-colors shadow-sm ${isRunning
+                ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100'
+                : 'border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
                 }`}
             >
               {isRunning ? <><Pause size={14} /> Stop Stream</> : <><Play size={14} /> {replayData ? 'Replay Data' : 'Start Sim'}</>}
@@ -648,38 +669,38 @@ export default function HighVelocityDashboard() {
           </div>
 
           {/* Main Center Stage - Expanded to fill dead space */}
-          <div className="flex-1 bg-gray-900/40 rounded-xl border border-gray-800 p-8 flex items-center justify-between relative overflow-hidden pr-12">
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_0px,rgba(0,0,0,0.2)_1px)] bg-[size:100%_4px] pointer-events-none" />
+          <div className="flex-1 bg-white rounded-2xl border border-gray-200 p-8 flex items-center justify-between relative overflow-hidden pr-12 shadow-sm">
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_0px,rgba(0,0,0,0.03)_1px)] bg-[size:100%_4px] pointer-events-none" />
 
             {/* G-Force - Upscaled */}
             <div className="flex flex-col items-center gap-4">
-              <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest">Lateral G</h3>
+              <h3 className="text-sm font-mono text-gray-400 uppercase tracking-widest">Lateral G</h3>
               <GForceMeter x={telemetry.gLat} y={telemetry.gLong} />
             </div>
 
             {/* Speed/RPM Main - Adjusted size to prevent overlap */}
             <div className="flex flex-col items-center z-10 mx-4" style={{ transform: 'translateX(-10%)' }}>
-              <div className="text-[9rem] font-black leading-none italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-600 pr-8">
+              <div className="text-[9rem] font-black leading-none italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-slate-900 to-slate-500 pr-8">
                 {Math.round(telemetry.speed)}
               </div>
-              <div className="text-3xl font-mono text-blue-400 font-bold -mt-4">MPH</div>
+              <div className="text-3xl font-mono text-blue-600 font-bold -mt-4">MPH</div>
 
               {/* RPM Bar - Upscaled */}
-              <div className="w-96 h-6 bg-gray-800 rounded mt-8 overflow-hidden flex gap-0.5">
+              <div className="w-96 h-6 bg-gray-200 rounded mt-8 overflow-hidden flex gap-0.5 border border-gray-100">
                 {Array.from({ length: 20 }).map((_, i) => (
                   <div
                     key={i}
                     className={`flex-1 transition-all duration-75 ${(telemetry.rpm / 8000) * 20 > i
-                      ? (i > 16 ? 'bg-red-500' : 'bg-blue-500')
-                      : 'bg-gray-800'
+                      ? (i > 16 ? 'bg-red-500' : 'bg-blue-600')
+                      : 'bg-gray-100'
                       }`}
                   />
                 ))}
               </div>
               <div className="flex justify-between w-full mt-1 px-1">
-                <span className="text-xs font-mono text-gray-500">0</span>
-                <span className="text-xs font-mono text-gray-500">4000</span>
-                <span className="text-xs font-mono text-gray-500">8000</span>
+                <span className="text-xs font-mono text-gray-400">0</span>
+                <span className="text-xs font-mono text-gray-400">4000</span>
+                <span className="text-xs font-mono text-gray-400">8000</span>
               </div>
             </div>
 
@@ -692,39 +713,43 @@ export default function HighVelocityDashboard() {
 
           {/* Bottom Graphs - Fixed Height */}
           <div className="h-64 grid grid-cols-2 gap-4 shrink-0">
-            <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
               <h4 className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase mb-4">
                 <Activity size={14} /> Speed History (Last 2s)
               </h4>
-              <div className="flex items-end h-32 gap-1">
+              <div className="flex items-end h-32 gap-1 border-b border-gray-100 pb-1">
                 {speedHistory.map((val, i) => (
                   <div
                     key={i}
-                    className="flex-1 bg-blue-500 hover:bg-blue-400 transition-colors"
+                    className="flex-1 bg-blue-500 rounded-t-sm opacity-80"
                     style={{
                       height: `${Math.min(100, (val / 180) * 100)}%`, // Scaled to max 180mph
                     }}
                   />
                 ))}
               </div>
+              <div className="flex justify-between mt-2 text-[10px] font-mono text-gray-400">
+                <span>-2s</span>
+                <span>Now</span>
+              </div>
             </div>
 
-            <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
               <h4 className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase mb-4">
                 <Wifi size={14} /> Signal Strength
               </h4>
               <div className="grid grid-cols-2 gap-4 h-full">
                 <div>
-                  <div className="text-xs text-gray-500">UPLINK</div>
-                  <div className="text-xl font-mono text-white">45.2 <span className="text-sm text-gray-600">mbps</span></div>
+                  <div className="text-xs text-gray-400 font-bold">UPLINK</div>
+                  <div className="text-xl font-mono text-slate-800">45.2 <span className="text-sm text-gray-400">mbps</span></div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">PACKET LOSS</div>
-                  <div className="text-xl font-mono text-green-400">0.02%</div>
+                  <div className="text-xs text-gray-400 font-bold">PACKET LOSS</div>
+                  <div className="text-xl font-mono text-emerald-500">0.02%</div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">GPS ACCURACY</div>
-                  <div className="text-xl font-mono text-white">12 <span className="text-sm text-gray-600">cm</span></div>
+                  <div className="text-xs text-gray-400 font-bold">GPS ACCURACY</div>
+                  <div className="text-xl font-mono text-slate-800">12 <span className="text-sm text-gray-400">cm</span></div>
                 </div>
               </div>
             </div>
@@ -732,11 +757,11 @@ export default function HighVelocityDashboard() {
         </section>
 
         {/* RIGHT COL: Agentic Reasoning (Gemini Output) */}
-        <section className="col-span-4 row-span-6 bg-gray-900/80 rounded-xl border border-gray-700 flex flex-col backdrop-blur-sm overflow-hidden">
-          <div className="bg-gray-800/50 p-3 border-b border-gray-700 flex items-center justify-between">
+        <section className="col-span-4 row-span-6 bg-white border border-gray-200 rounded-2xl p-4 flex flex-col shadow-sm">
+          <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
             <div className="flex items-center gap-2">
-              <Zap size={16} className="text-yellow-400" />
-              <span className="font-bold text-sm tracking-wide text-gray-200">GEMINI SQUAD</span>
+              <Zap size={16} className="text-amber-500" />
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">GEMINI SQUAD</h3>
             </div>
             <div className="flex items-center gap-2">
               {isApiProcessing && (
@@ -746,37 +771,37 @@ export default function HighVelocityDashboard() {
                 </span>
               )}
               <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full bg-gray-600" />
-                <div className="w-2 h-2 rounded-full bg-gray-600" />
-                <div className="w-2 h-2 rounded-full bg-gray-600" />
+                <div className="w-2 h-2 rounded-full bg-gray-200" />
+                <div className="w-2 h-2 rounded-full bg-gray-200" />
+                <div className="w-2 h-2 rounded-full bg-gray-200" />
               </div>
             </div>
           </div>
 
           {/* The Chat/Log Stream */}
-          <div className="flex-1 p-4 overflow-y-auto font-mono text-xs space-y-3">
+          <div className="flex-1 p-2 overflow-y-auto font-mono text-xs space-y-3 pr-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
             {!isRunning && (
-              <div className="text-gray-500 italic text-center mt-10">
+              <div className="text-gray-400 italic text-center mt-10">
                 {replayData ? 'CSV Data Loaded. Ready to Replay.' : 'Waiting for data stream initialization...'}
               </div>
             )}
             {logs.map((log, i) => (
               <div key={i} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex gap-2 text-[10px] text-gray-500 mb-0.5 items-center">
+                <div className="flex gap-2 text-[10px] text-gray-400 mb-0.5 items-center">
                   <span>[{log.time}]</span>
                   <span className={`${log.color} font-bold`}>{log.agent}</span>
-                  <span className="text-gray-600 text-[9px] border border-gray-700 rounded px-1">{log.role}</span>
+                  <span className="text-gray-500 text-[9px] border border-gray-200 rounded px-1 uppercase">{log.role}</span>
                 </div>
-                <div className={`p-2 rounded border-l-2 ${log.bg} ${log.border} text-gray-300`}>
-                  {log.msg}
+                <div className={`p-3 rounded-xl ${log.bg} ${log.border} border shadow-sm`}>
+                  <p className={`${log.color} leading-relaxed font-medium`}>{log.msg}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="p-3 bg-gray-950 border-t border-gray-800">
-            <div className="flex items-center gap-2 text-gray-500 text-xs">
-              <MessageSquare size={12} />
+          <div className="p-3 bg-gray-50 border-t border-gray-100 rounded-b-xl">
+            <div className="flex items-center gap-2 text-gray-400 text-xs font-mono uppercase tracking-wide">
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
               <span>Multi-agent reasoning active...</span>
             </div>
           </div>
