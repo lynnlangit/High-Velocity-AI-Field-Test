@@ -135,8 +135,8 @@ export default function HighVelocityDashboard() {
       return;
     }
 
-    // 3. Nano Mute removed to allow Nano to speak as requested
-    // if (agent === 'NANO' && priority !== 'high') { return; }
+    // 3. Mute Gemini/System from speaking (Visual only as requested)
+    if (agent === 'GEMINI' || agent === 'SYSTEM') { return; }
 
     // Cancel any pending chatter to ensure this message comes through clearly immediately
     window.speechSynthesis.cancel();
@@ -144,26 +144,33 @@ export default function HighVelocityDashboard() {
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
 
-    // 4. Voice Consistency: Use a SINGLE, clear voice for all agents to avoid "chaotic" feeling.
-    // We only vary rate/pitch slightly to distinguish personas.
-    // Prefer "Google US English" or default system voice.
-    let selectedVoice = voices.find(v => v.name.includes('Google US English')) ||
-      voices.find(v => v.lang.includes('en-US')) ||
-      voices[0];
+    // 4. Voice Persona Selection
+    let selectedVoice = null;
 
-    // Persona Tuning (Subtle)
     if (agent === 'AJ') {
-      utterance.rate = 1.15; // Slightly faster, commanding
-      utterance.pitch = 1.05;
-    } else if (agent === 'ROSS') {
-      utterance.rate = 0.95; // Slower, technical
-      utterance.pitch = 0.95;
-    } else if (agent === 'GEMINI') {
-      utterance.rate = 1.0; // Standard, robotic
+      // AJ: Aggressive, US Male (Crew Chief)
+      selectedVoice = voices.find(v => v.name.includes('Google US English')) ||
+        voices.find(v => v.lang === 'en-US' && v.name.includes('Male')) ||
+        voices.find(v => v.lang === 'en-US');
+      utterance.rate = 1.1;
       utterance.pitch = 1.0;
+    } else if (agent === 'ROSS') {
+      // ROSS: Technical, UK Male (Telemetry)
+      selectedVoice = voices.find(v => v.name.includes('Google UK English Male')) ||
+        voices.find(v => v.name.includes('Great Britain') && v.name.includes('Male')) ||
+        voices.find(v => v.lang === 'en-GB');
+      utterance.rate = 1.0;
+      utterance.pitch = 0.95; // Slightly lower pitch for calmness
     } else if (agent === 'NANO') {
-      utterance.rate = 1.3; // Fast alerts
+      // NANO: Robotic, Fast Alerts
+      selectedVoice = voices.find(v => v.name.includes('Google US English')) || voices[0];
+      utterance.rate = 1.25;
       utterance.pitch = 1.1;
+    }
+
+    // Fallback if specific voice not found
+    if (!selectedVoice) {
+      selectedVoice = voices.find(v => v.lang.includes('en-US')) || voices[0];
     }
 
     if (selectedVoice) utterance.voice = selectedVoice;
