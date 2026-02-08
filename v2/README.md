@@ -1,7 +1,7 @@
 # High Velocity AI Field Test - v2
 
 ## Overview
-**v2** represents a production-ready refactor of the original prototype. The focus has shifted from "proof of concept" to **safety, clarity, and latency**.
+**v2** represents a next-step refactor of the original prototype. The focus has shifted from "proof of concept" to **safety, clarity, and latency**.
 
 ## Key Updates (vs v1)
 
