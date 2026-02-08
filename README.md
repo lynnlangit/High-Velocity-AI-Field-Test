@@ -3,7 +3,7 @@ Gemini at the Race Track - see a version of the app in action --> https://youtu.
 
 <img src="https://github.com/lynnlangit/High-Velocity-AI-Field-Test/blob/main/app-in-action.png" width=800>
 
-## Gemini Racing Dashboard: v2.5 Architecture Summary
+## Gemini Racing Dashboard: Architecture Summary
 
 
 This summary outlines the evolution of the Gemini Racing Dashboard into a complete "Digital Twin." The project validates the capability of Gemini 2.5 Flash and a simulated Edge TPU (Gemini Nano) to function as a cohesive, real-time coaching team ("The Squad") in a high-stakes environment.
