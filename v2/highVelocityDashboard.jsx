@@ -79,6 +79,7 @@ export default function HighVelocityDashboard() {
   const [latency, setLatency] = useState(24);
   const [isApiProcessing, setIsApiProcessing] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [voiceCount, setVoiceCount] = useState(0); // Diagnostic
 
   // Debrief State
   const [showDebrief, setShowDebrief] = useState(false);
@@ -129,8 +130,25 @@ export default function HighVelocityDashboard() {
 
     // Load when changed (Chrome async loading)
     if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
+      window.speechSynthesis.onvoiceschanged = () => {
+        loadVoices();
+        setVoiceCount(window.speechSynthesis.getVoices().length);
+      };
     }
+  }, []);
+
+  // Unlock Audio Context on first interaction
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (window.speechSynthesis && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+      // Create silent buffer to warm up
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
+    };
+    window.addEventListener('click', unlockAudio, { once: true });
+    return () => window.removeEventListener('click', unlockAudio);
   }, []);
 
   // --- Voice Synthesis Logic (Safety Optimized) ---
@@ -159,48 +177,54 @@ export default function HighVelocityDashboard() {
     // 3. Mute Gemini/System from speaking (Visual only as requested)
     if (agent === 'GEMINI' || agent === 'SYSTEM') { return; }
 
-    // Ensure engine is ready
-    window.speechSynthesis.cancel(); // Clears stuck queue
-    window.speechSynthesis.resume(); // Wakes up engine
-
-    const utterance = new SpeechSynthesisUtterance(text);
-
     // Ensure voices are loaded
     if (voicesRef.current.length === 0) {
       voicesRef.current = window.speechSynthesis.getVoices();
     }
     const voices = voicesRef.current;
 
+    // Ensure engine is ready
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel(); // Clears stuck queue only if speaking
+    }
+    window.speechSynthesis.resume(); // Wakes up engine
+
+    const utterance = new SpeechSynthesisUtterance(text);
+
     // 4. Voice Persona Selection
     let selectedVoice = null;
 
     if (agent === 'AJ') {
-      // AJ: Aggressive, US Male (Crew Chief) - Prioritize known Male US voices
-      selectedVoice = voices.find(v => v.name === 'Fred') ||
-        voices.find(v => v.name.includes('Google US English') && v.name.includes('Male')) ||
-        voices.find(v => v.name === 'Reed (English (United States))') ||
-        voices.find(v => v.name === 'Rocko (English (United States))') ||
-        voices.find(v => v.lang === 'en-US' && v.name.includes('Male')) ||
-        voices.find(v => v.name.includes('Google US English')); // Fallback
-      utterance.rate = 1.1;
+      // AJ: Crew Chief - Clear, authoritative, natural. Avoid robotic "Fred".
+      // Prioritize high-quality macOS/Chrome voices.
+      selectedVoice = voices.find(v => v.name.includes('Evan (Enhanced)')) ||
+        voices.find(v => v.name.includes('Nathan (Enhanced)')) ||
+        voices.find(v => v.name.includes('Google US English')) ||
+        voices.find(v => v.name === 'Tom') ||
+        voices.find(v => v.name === 'Alex') ||
+        voices.find(v => v.lang === 'en-US' && !v.name.includes('Fred') && !v.name.includes('Victoria')); // Generic US, exclude known robotic/female
+      utterance.rate = 1.1; // Slightly urgent
       utterance.pitch = 1.0;
     } else if (agent === 'ROSS') {
-      // ROSS: Technical, UK Male (Telemetry)
-      selectedVoice = voices.find(v => v.name.includes('Google UK English Male')) ||
-        voices.find(v => v.name.includes('Great Britain') && v.name.includes('Male')) ||
+      // ROSS: Technical, Precision (UK Preference)
+      selectedVoice = voices.find(v => v.name.includes('Daniel (Enhanced)')) ||
+        voices.find(v => v.name.includes('Google UK English Male')) ||
+        voices.find(v => v.name === 'Daniel') ||
         voices.find(v => v.lang === 'en-GB');
-      utterance.rate = 1.0;
-      utterance.pitch = 0.95; // Slightly lower pitch for calmness
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
     } else if (agent === 'NANO') {
-      // NANO: Robotic, Fast Alerts
-      selectedVoice = voices.find(v => v.name.includes('Google US English')) || voices[0];
-      utterance.rate = 1.25;
-      utterance.pitch = 1.1;
+      // NANO: Robotic/Alerts - Fast & Clear
+      selectedVoice = voices.find(v => v.name.includes('Samantha (Enhanced)')) ||
+        voices.find(v => v.name === 'Samantha') ||
+        voices.find(v => v.name.includes('Google US English'));
+      utterance.rate = 1.2;
+      utterance.pitch = 1.05;
     }
 
     // Fallback if specific voice not found
     if (!selectedVoice) {
-      selectedVoice = voices.find(v => v.lang.includes('en-US')) || voices[0];
+      selectedVoice = voices.find(v => v.default) || voices[0];
     }
 
     if (selectedVoice) utterance.voice = selectedVoice;
@@ -209,11 +233,14 @@ export default function HighVelocityDashboard() {
     const spokenText = text.replace(/_/g, ' ');
     utterance.text = spokenText;
 
-    // Debug Logging
-    console.log(`[Audio] Speaking: "${spokenText}" | Agent: ${agent} | Priority: ${priority} | Force: ${force}`);
+    // Debug Logging (Expanded for diagnostics)
+    console.log(`[Audio] Q: "${spokenText}" | Voices: ${voices.length} | State: ${window.speechSynthesis.paused ? 'PAUSED' : 'ACTIVE'} | Pending: ${window.speechSynthesis.pending}`);
     console.log(`[Audio] Voice: ${selectedVoice ? selectedVoice.name : 'DEFAULT'}`);
 
     utterance.onerror = (e) => {
+      console.error("[Audio] Speech Error Event:", e);
+      console.error(`[Audio] Error Details: Code=${e.error}, Elapsed=${e.elapsedTime}, Msg=${e.message}`);
+      setLastSpeechError(`Err: ${e.error} (${voices.length}v)`);
       console.error("[Audio] Speech Error:", e);
       setLastSpeechError(`Error: ${e.error}`);
       // Fallback: If speech fails, play a beep so user knows SOMETHING happened
@@ -742,6 +769,9 @@ export default function HighVelocityDashboard() {
             >
               TEST
             </button>
+            <span className="text-[10px] text-gray-300 font-mono flex items-center pt-1" title="Available Voices">
+              V:{voiceCount}
+            </span>
 
             <button
               onClick={() => fileInputRef.current.click()}
