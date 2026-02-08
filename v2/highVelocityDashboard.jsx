@@ -112,6 +112,25 @@ export default function HighVelocityDashboard() {
     audioEnabledRef.current = isAudioEnabled;
   }, [isAudioEnabled]);
 
+  // --- Voice Loading Logic ---
+  const voicesRef = useRef([]);
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      if (availableVoices.length > 0) {
+        voicesRef.current = availableVoices;
+      }
+    };
+
+    // Load immediately
+    loadVoices();
+
+    // Load when changed (Chrome async loading)
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
+
   // --- Voice Synthesis Logic (Safety Optimized) ---
 
   const speak = (text, agent, priority) => {
@@ -142,7 +161,12 @@ export default function HighVelocityDashboard() {
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
+
+    // Ensure voices are loaded
+    if (voicesRef.current.length === 0) {
+      voicesRef.current = window.speechSynthesis.getVoices();
+    }
+    const voices = voicesRef.current;
 
     // 4. Voice Persona Selection
     let selectedVoice = null;
