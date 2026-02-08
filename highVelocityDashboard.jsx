@@ -197,6 +197,11 @@ export default function HighVelocityDashboard() {
     }
   };
 
+  const testAudio = () => {
+    if (!isAudioEnabled) return;
+    speak("Audio check. Systems nominal.", "AJ", "high");
+  };
+
 
   // --- API Logic (Gemini 2.5 Cloud + RAG) ---
 
@@ -705,6 +710,15 @@ export default function HighVelocityDashboard() {
                 title="Toggle Voice Synthesis"
             >
                 {isAudioEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+            </button>
+
+            <button
+                onClick={testAudio}
+                disabled={!isAudioEnabled} 
+                className={`flex items-center gap-2 px-3 py-1.5 rounded border border-gray-700 font-mono text-xs uppercase tracking-wide transition-colors ${!isAudioEnabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800 text-gray-400'}`}
+                title="Test Audio Output"
+            >
+                <Play size={14} /> Test
             </button>
 
             <button 
