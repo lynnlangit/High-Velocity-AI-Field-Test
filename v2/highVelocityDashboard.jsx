@@ -172,10 +172,13 @@ export default function HighVelocityDashboard() {
     let selectedVoice = null;
 
     if (agent === 'AJ') {
-      // AJ: Aggressive, US Male (Crew Chief)
-      selectedVoice = voices.find(v => v.name.includes('Google US English')) ||
+      // AJ: Aggressive, US Male (Crew Chief) - Prioritize known Male US voices
+      selectedVoice = voices.find(v => v.name === 'Fred') ||
+        voices.find(v => v.name.includes('Google US English') && v.name.includes('Male')) ||
+        voices.find(v => v.name === 'Reed (English (United States))') ||
+        voices.find(v => v.name === 'Rocko (English (United States))') ||
         voices.find(v => v.lang === 'en-US' && v.name.includes('Male')) ||
-        voices.find(v => v.lang === 'en-US');
+        voices.find(v => v.name.includes('Google US English')); // Fallback
       utterance.rate = 1.1;
       utterance.pitch = 1.0;
     } else if (agent === 'ROSS') {
