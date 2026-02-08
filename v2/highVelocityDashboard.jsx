@@ -84,6 +84,7 @@ export default function HighVelocityDashboard() {
   const [showDebrief, setShowDebrief] = useState(false);
   const [debriefReport, setDebriefReport] = useState(null);
   const [isDebriefLoading, setIsDebriefLoading] = useState(false);
+  const [lastSpeechError, setLastSpeechError] = useState(null); // Diagnostics
 
   // Replay State
   const [replayData, setReplayData] = useState(null); // Array of telemetry objects
@@ -102,6 +103,7 @@ export default function HighVelocityDashboard() {
   // Stores last speech time for debouncing/safety
   const lastSpeechTimeRef = useRef(0);
   const lastSpokenTextRef = useRef("");
+  const currentUtteranceRef = useRef(null); // Prevent GC of active utterance
 
   // Update refs when state changes
   useEffect(() => {
@@ -133,9 +135,9 @@ export default function HighVelocityDashboard() {
 
   // --- Voice Synthesis Logic (Safety Optimized) ---
 
-  const speak = (text, agent, priority) => {
-    // 1. Basic check: Is audio on?
-    if (!audioEnabledRef.current || !window.speechSynthesis) return;
+  const speak = (text, agent, priority, force = false) => {
+    // 1. Basic check: Is audio on? (Unless forced)
+    if ((!audioEnabledRef.current && !force) || !window.speechSynthesis) return;
 
     const now = Date.now();
     const timeSinceLastSpeech = now - lastSpeechTimeRef.current;
@@ -157,8 +159,9 @@ export default function HighVelocityDashboard() {
     // 3. Mute Gemini/System from speaking (Visual only as requested)
     if (agent === 'GEMINI' || agent === 'SYSTEM') { return; }
 
-    // Cancel any pending chatter to ensure this message comes through clearly immediately
-    window.speechSynthesis.cancel();
+    // Ensure engine is ready
+    window.speechSynthesis.cancel(); // Clears stuck queue
+    window.speechSynthesis.resume(); // Wakes up engine
 
     const utterance = new SpeechSynthesisUtterance(text);
 
@@ -206,6 +209,25 @@ export default function HighVelocityDashboard() {
     const spokenText = text.replace(/_/g, ' ');
     utterance.text = spokenText;
 
+    // Debug Logging
+    console.log(`[Audio] Speaking: "${spokenText}" | Agent: ${agent} | Priority: ${priority} | Force: ${force}`);
+    console.log(`[Audio] Voice: ${selectedVoice ? selectedVoice.name : 'DEFAULT'}`);
+
+    utterance.onerror = (e) => {
+      console.error("[Audio] Speech Error:", e);
+      setLastSpeechError(`Error: ${e.error}`);
+      // Fallback: If speech fails, play a beep so user knows SOMETHING happened
+      playBeep(priority);
+    };
+    utterance.onstart = () => {
+      console.log("[Audio] Speech Started");
+      setLastSpeechError(null); // Clear error on success
+    };
+    utterance.onend = () => { console.log("[Audio] Speech Ended"); currentUtteranceRef.current = null; };
+
+    // Prevent Garbage Collection bug in Chrome
+    currentUtteranceRef.current = utterance;
+
     window.speechSynthesis.speak(utterance);
     lastSpeechTimeRef.current = now;
     lastSpokenTextRef.current = text;
@@ -229,6 +251,36 @@ export default function HighVelocityDashboard() {
       window.speechSynthesis.speak(utterance);
     } else {
       window.speechSynthesis.cancel();
+    }
+  };
+
+  // --- Beep Fallback (AudioContext) ---
+  const playBeep = (priority) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (priority === 'high') {
+        osc.frequency.setValueAtTime(880, ctx.currentTime); // High pitch (A5)
+        osc.type = 'square';
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      } else {
+        osc.frequency.setValueAtTime(440, ctx.currentTime); // Standard pitch (A4)
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      }
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15); // Short beep
+    } catch (e) {
+      console.error("[Audio] Beep failed:", e);
     }
   };
 
@@ -663,9 +715,30 @@ export default function HighVelocityDashboard() {
               {isAudioEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
             </button>
             <button
-              onClick={() => speak("Radio check. Loud and clear.", "AJ", "high")}
+              onClick={() => {
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.resume();
+                setLastSpeechError(null);
+                console.log("[Audio] Hard Reset Triggered");
+              }}
+              className="px-2 py-1.5 rounded-lg border border-red-200 text-xs font-mono text-red-500 hover:bg-red-50 transition-colors"
+              title="Hard Reset Audio Engine"
+            >
+              RESET
+            </button>
+            {lastSpeechError && (
+              <span className="text-[10px] text-red-500 font-mono font-bold animate-pulse px-2 border border-red-200 bg-red-50 rounded">
+                {lastSpeechError}
+              </span>
+            )}
+            <button
+              onClick={() => {
+                // FORCE resume audio context (fixes browser autoplay blocks)
+                if (window.speechSynthesis) window.speechSynthesis.resume();
+                speak("Radio check. Loud and clear.", "AJ", "high", true);
+              }}
               className="px-2 py-1.5 rounded-lg border border-gray-200 text-xs font-mono text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
-              title="Test Audio"
+              title="Test Audio (Forces Unmute)"
             >
               TEST
             </button>
