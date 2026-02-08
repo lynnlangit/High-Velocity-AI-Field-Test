@@ -1,14 +1,14 @@
 # High-Velocity-AI-Field-Test
 Gemini at the Race Track - see a version of the app in action --> https://youtu.be/Ho21d39c2bY  
 
-<img src="https://github.com/lynnlangit/High-Velocity-AI-Field-Test/blob/main/app-in-action.png" width=800>
+<img src="https://github.com/lynnlangit/High-Velocity-AI-Field-Test/blob/main/images/app-in-action.png" width=800>
 
 ## Gemini Racing Dashboard: Architecture Summary
 
 
 This summary outlines the evolution of the Gemini Racing Dashboard into a complete "Digital Twin." The project validates the capability of Gemini 2.5 Flash and a simulated Edge TPU (Gemini Nano) to function as a cohesive, real-time coaching team ("The Squad") in a high-stakes environment.
 
-<img src="https://github.com/lynnlangit/High-Velocity-AI-Field-Test/blob/main/squad.png" width=600>
+<img src="https://github.com/lynnlangit/High-Velocity-AI-Field-Test/blob/main/images/squad.png" width=600>
 
 ### Architectural Design: The "Squad" Pattern
 
@@ -65,4 +65,4 @@ The application now serves as a full-lifecycle tool:
 This architecture demonstrates a reusable blueprint for "Trustable AI" in professional domains  . 
 By combining real-time safety filters (Hot Path) with deep retrospective analysis (Learning Loop), the system provides value both during and after the event.
 
-<img src="https://github.com/lynnlangit/High-Velocity-AI-Field-Test/blob/main/POC-arch.png">
+<img src="https://github.com/lynnlangit/High-Velocity-AI-Field-Test/blob/main/images/POC-arch.png">
