@@ -636,7 +636,7 @@ export default function HighVelocityDashboard() {
               {isAudioEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
             </button>
             <button
-              onClick={() => speak("Audio System Check. ONE, TWO, THREE.", "SYSTEM", "high")}
+              onClick={() => speak("Radio check. Loud and clear.", "AJ", "high")}
               className="px-2 py-1.5 rounded-lg border border-gray-200 text-xs font-mono text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
               title="Test Audio"
             >
