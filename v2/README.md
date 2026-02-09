@@ -1,7 +1,7 @@
 # High Velocity AI Field Test - v2
 
 ## Overview
-**v2** represents a next-step refactor of the original prototype. The focus has shifted from "proof of concept" to **safety, clarity, and latency**.
+**v2** represents a next-step refactor of the original prototype. The focus has shifted from "proof of concept" to an even more complete demo, continuing to improve in the key areas of **safety, clarity, and latency**.
 
 <img src="https://github.com/lynnlangit/High-Velocity-AI-Field-Test/blob/main/images/v2-racing.png">
 
