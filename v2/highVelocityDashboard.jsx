@@ -56,7 +56,89 @@ const TelemetryBar = ({ label, value, max, color = "bg-blue-500" }) => (
   </div>
 );
 
-// --- Main Application ---
+// --- Global Audio System (Bypass React Lifecycle) ---
+// This is critical for Chrome/Safari which aggressively GC SpeechSynthesisUtterance
+// if it's tied to React refs that might get unmounted/remounted during HMR.
+
+const GLOBAL_AUDIO = {
+  queue: [],
+  isSpeaking: false,
+  activeUtterance: null,
+};
+
+const processGlobalQueue = () => {
+  if (GLOBAL_AUDIO.isSpeaking || GLOBAL_AUDIO.queue.length === 0) return;
+
+  if (!window.speechSynthesis) return;
+
+  // Safe Resume
+  if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+
+  const task = GLOBAL_AUDIO.queue.shift();
+  GLOBAL_AUDIO.isSpeaking = true;
+
+  const utter = new SpeechSynthesisUtterance(task.text);
+
+  // Voice Selection (Just get the best one available NOW)
+  const voices = window.speechSynthesis.getVoices();
+  let selectedVoice = null;
+
+  if (task.agent === 'AJ') {
+    selectedVoice = voices.find(v => v.name.includes('Evan (Enhanced)')) ||
+      voices.find(v => v.name.includes('Nathan (Enhanced)')) ||
+      voices.find(v => v.name.includes('Google US English')) ||
+      voices.find(v => v.lang === 'en-US' && !v.name.includes('Victoria'));
+    utter.rate = 1.1;
+  } else if (task.agent === 'ROSS') {
+    selectedVoice = voices.find(v => v.name.includes('Daniel (Enhanced)')) ||
+      voices.find(v => v.lang === 'en-GB');
+    utter.rate = 1.05;
+  } else if (task.agent === 'NANO') {
+    selectedVoice = voices.find(v => v.name.includes('Samantha (Enhanced)')) ||
+      voices.find(v => v.name.includes('Google US English'));
+    utter.rate = 1.2;
+  }
+
+  if (!selectedVoice) selectedVoice = voices.find(v => v.default) || voices[0];
+  if (selectedVoice) utter.voice = selectedVoice;
+
+  utter.onstart = () => { console.log(`[Audio] [Global] Started: "${task.text}"`); };
+  utter.onend = () => {
+    console.log(`[Audio] [Global] Ended: "${task.text}"`);
+    GLOBAL_AUDIO.isSpeaking = false;
+    GLOBAL_AUDIO.activeUtterance = null;
+    processGlobalQueue();
+  };
+  utter.onerror = (e) => {
+    console.error(`[Audio] [Global] Error: ${e.error}`);
+    GLOBAL_AUDIO.isSpeaking = false;
+    GLOBAL_AUDIO.activeUtterance = null;
+    processGlobalQueue();
+  };
+
+  GLOBAL_AUDIO.activeUtterance = utter; // Keep alive
+  window.speechSynthesis.speak(utter);
+
+  // Watchdog
+  setTimeout(() => {
+    if (GLOBAL_AUDIO.isSpeaking && GLOBAL_AUDIO.activeUtterance === utter) {
+      console.warn("[Audio] Global Watchdog - skipping");
+      window.speechSynthesis.cancel();
+      GLOBAL_AUDIO.isSpeaking = false;
+      processGlobalQueue();
+    }
+  }, 8000);
+};
+
+const globalSpeak = (text, agent) => {
+  // Simple check
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.resume();
+
+  GLOBAL_AUDIO.queue.push({ text: text.replace(/_/g, ' '), agent });
+  processGlobalQueue();
+};
+
 
 export default function HighVelocityDashboard() {
   const [isRunning, setIsRunning] = useState(false);
@@ -104,7 +186,11 @@ export default function HighVelocityDashboard() {
   // Stores last speech time for debouncing/safety
   const lastSpeechTimeRef = useRef(0);
   const lastSpokenTextRef = useRef("");
-  const currentUtteranceRef = useRef(null); // Prevent GC of active utterance
+
+  // --- New Robust Audio Queue ---
+  const audioQueueRef = useRef([]);
+  const isSpeakingRef = useRef(false);
+  const activeUtteranceRef = useRef(null); // Strong ref to prevent GC
 
   // Update refs when state changes
   useEffect(() => {
@@ -135,6 +221,18 @@ export default function HighVelocityDashboard() {
         setVoiceCount(window.speechSynthesis.getVoices().length);
       };
     }
+
+    // Aggressive Polling for Voices (Fix for V:0)
+    const voiceInterval = setInterval(() => {
+      const v = window.speechSynthesis.getVoices();
+      if (v.length > 0) {
+        voicesRef.current = v;
+        setVoiceCount(v.length);
+        clearInterval(voiceInterval); // Stop polling once found
+      }
+    }, 500);
+
+    return () => clearInterval(voiceInterval);
   }, []);
 
   // Unlock Audio Context on first interaction
@@ -151,113 +249,67 @@ export default function HighVelocityDashboard() {
     return () => window.removeEventListener('click', unlockAudio);
   }, []);
 
-  // --- Voice Synthesis Logic (Safety Optimized) ---
+  // --- Voice Synthesis Logic (Reverted to v1 Style with v2 Selection) ---
 
   const speak = (text, agent, priority, force = false) => {
-    // 1. Basic check: Is audio on? (Unless forced)
+    // 1. Basic check: Is audio on?
     if ((!audioEnabledRef.current && !force) || !window.speechSynthesis) return;
 
     const now = Date.now();
     const timeSinceLastSpeech = now - lastSpeechTimeRef.current;
 
-    // 2. Safety Buffer & Deduplication
-
-    // A. Deduplication: Don't repeat the EXACT same message within 8 seconds (prevents "nagging")
-    if (text === lastSpokenTextRef.current && (now - lastSpeechTimeRef.current) < 8000) {
+    // 2. Safety Buffer (from v1)
+    const safetyBuffer = 3000;
+    if (timeSinceLastSpeech < safetyBuffer && priority !== 'high' && !force) {
       return;
     }
 
-    // B. Safety Buffer: Space out DIFFERENT messages by 3 seconds (unless high priority)
-    // This reduces cognitive load on the "driver"
-    const safetyBuffer = priority === 'high' ? 0 : 3000;
-    if (timeSinceLastSpeech < safetyBuffer) {
+    // 3. Nano Mute (from v1)
+    if (agent === 'NANO' && priority !== 'high' && !force) {
       return;
     }
 
-    // 3. Mute Gemini/System from speaking (Visual only as requested)
-    if (agent === 'GEMINI' || agent === 'SYSTEM') { return; }
-
-    // Ensure voices are loaded
-    if (voicesRef.current.length === 0) {
-      voicesRef.current = window.speechSynthesis.getVoices();
-    }
-    const voices = voicesRef.current;
-
-    // Ensure engine is ready
-    if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.cancel(); // Clears stuck queue only if speaking
-    }
-    window.speechSynthesis.resume(); // Wakes up engine
+    // Cancel any pending chatter (from v1 - Critical for this environment?)
+    window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
 
-    // 4. Voice Persona Selection
+    // 4. Voice Selection (v2 Logic - Better Voices)
     let selectedVoice = null;
 
     if (agent === 'AJ') {
-      // AJ: Crew Chief - Clear, authoritative, natural. Avoid robotic "Fred".
-      // Prioritize high-quality macOS/Chrome voices.
       selectedVoice = voices.find(v => v.name.includes('Evan (Enhanced)')) ||
         voices.find(v => v.name.includes('Nathan (Enhanced)')) ||
         voices.find(v => v.name.includes('Google US English')) ||
-        voices.find(v => v.name === 'Tom') ||
-        voices.find(v => v.name === 'Alex') ||
-        voices.find(v => v.lang === 'en-US' && !v.name.includes('Fred') && !v.name.includes('Victoria')); // Generic US, exclude known robotic/female
-      utterance.rate = 1.1; // Slightly urgent
-      utterance.pitch = 1.0;
+        voices.find(v => v.name === 'Tom') || // Mac
+        voices.find(v => v.lang === 'en-US' && !v.name.includes('Victoria'));
+      utterance.rate = 1.1;
     } else if (agent === 'ROSS') {
-      // ROSS: Technical, Precision (UK Preference)
       selectedVoice = voices.find(v => v.name.includes('Daniel (Enhanced)')) ||
         voices.find(v => v.name.includes('Google UK English Male')) ||
-        voices.find(v => v.name === 'Daniel') ||
         voices.find(v => v.lang === 'en-GB');
       utterance.rate = 1.05;
-      utterance.pitch = 1.0;
     } else if (agent === 'NANO') {
-      // NANO: Robotic/Alerts - Fast & Clear
       selectedVoice = voices.find(v => v.name.includes('Samantha (Enhanced)')) ||
-        voices.find(v => v.name === 'Samantha') ||
         voices.find(v => v.name.includes('Google US English'));
       utterance.rate = 1.2;
-      utterance.pitch = 1.05;
     }
 
-    // Fallback if specific voice not found
+    // Fallback (v1 style)
     if (!selectedVoice) {
-      selectedVoice = voices.find(v => v.default) || voices[0];
+      selectedVoice = voices.find(v => v.name.includes('Google US English')) ||
+        voices.find(v => v.lang.includes('en-US')) ||
+        voices[0];
     }
 
     if (selectedVoice) utterance.voice = selectedVoice;
 
-    // Sanitize text for speech (User Request: "MAX_GRIP" -> "MAX GRIP")
-    const spokenText = text.replace(/_/g, ' ');
-    utterance.text = spokenText;
-
-    // Debug Logging (Expanded for diagnostics)
-    console.log(`[Audio] Q: "${spokenText}" | Voices: ${voices.length} | State: ${window.speechSynthesis.paused ? 'PAUSED' : 'ACTIVE'} | Pending: ${window.speechSynthesis.pending}`);
-    console.log(`[Audio] Voice: ${selectedVoice ? selectedVoice.name : 'DEFAULT'}`);
-
-    utterance.onerror = (e) => {
-      console.error("[Audio] Speech Error Event:", e);
-      console.error(`[Audio] Error Details: Code=${e.error}, Elapsed=${e.elapsedTime}, Msg=${e.message}`);
-      setLastSpeechError(`Err: ${e.error} (${voices.length}v)`);
-      console.error("[Audio] Speech Error:", e);
-      setLastSpeechError(`Error: ${e.error}`);
-      // Fallback: If speech fails, play a beep so user knows SOMETHING happened
-      playBeep(priority);
-    };
-    utterance.onstart = () => {
-      console.log("[Audio] Speech Started");
-      setLastSpeechError(null); // Clear error on success
-    };
-    utterance.onend = () => { console.log("[Audio] Speech Ended"); currentUtteranceRef.current = null; };
-
-    // Prevent Garbage Collection bug in Chrome
-    currentUtteranceRef.current = utterance;
-
     window.speechSynthesis.speak(utterance);
     lastSpeechTimeRef.current = now;
-    lastSpokenTextRef.current = text;
+
+    // Debug
+    console.log(`[Audio] Speaking: "${text}" (${selectedVoice?.name})`);
   };
 
   // Ensure voices are loaded (Chrome requirement)
@@ -364,6 +416,13 @@ export default function HighVelocityDashboard() {
   };
 
   const addLog = (data) => {
+    // 0. Redundancy Check (Suppress non-safety duplicates)
+    if (data.priority !== 'high' && data.msg === lastSpokenTextRef.current) {
+      return;
+    }
+
+    lastSpokenTextRef.current = data.msg;
+
     // 1. Speak the message (if audio enabled and meets safety criteria)
     speak(data.msg, data.agent, data.priority);
 
@@ -769,7 +828,7 @@ export default function HighVelocityDashboard() {
             >
               TEST
             </button>
-            <span className="text-[10px] text-gray-300 font-mono flex items-center pt-1" title="Available Voices">
+            <span className="text-[10px] text-gray-300 font-mono flex items-center pt-1 cursor-pointer hover:text-white" title="Available Voices (Click to Reload)" onClick={() => window.speechSynthesis.getVoices()}>
               V:{voiceCount}
             </span>
 
@@ -854,16 +913,43 @@ export default function HighVelocityDashboard() {
               <h4 className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase mb-4">
                 <Activity size={14} /> Speed History (Last 2s)
               </h4>
-              <div className="flex items-end h-32 gap-1 border-b border-gray-100 pb-1">
-                {speedHistory.map((val, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 bg-blue-500 rounded-t-sm opacity-80"
-                    style={{
-                      height: `${Math.min(100, (val / 180) * 100)}%`, // Scaled to max 180mph
-                    }}
+              <div className="relative h-32 w-full border-b border-gray-100">
+                {/* SVG Graph */}
+                <svg className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none" viewBox={`0 0 ${speedHistory.length - 1} 180`}>
+                  <defs>
+                    <linearGradient id="speedGradient" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.5" />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Reference Lines (Dotted) */}
+                  <line x1="0" y1={180 - 50} x2="100%" y2={180 - 50} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4" vectorEffect="non-scaling-stroke" />
+                  <line x1="0" y1={180 - 100} x2="100%" y2={180 - 100} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4" vectorEffect="non-scaling-stroke" />
+                  <line x1="0" y1={180 - 150} x2="100%" y2={180 - 150} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4" vectorEffect="non-scaling-stroke" />
+
+                  {/* Area Fill */}
+                  <path
+                    d={`M 0,180 ${speedHistory.map((s, i) => `L ${i},${180 - s}`).join(" ")} L ${speedHistory.length - 1},180 Z`}
+                    fill="url(#speedGradient)"
                   />
-                ))}
+
+                  {/* Stroke Line */}
+                  <path
+                    d={`M 0,${180 - speedHistory[0]} ${speedHistory.map((s, i) => `L ${i},${180 - s}`).join(" ")}`}
+                    fill="none"
+                    stroke="#2563eb"
+                    strokeWidth="2"
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+
+                {/* Max Speed Indicator (Overlay) */}
+                <div className="absolute top-2 right-2 text-[10px] font-mono font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                  PEAK: {Math.max(...speedHistory).toFixed(0)}
+                </div>
               </div>
               <div className="flex justify-between mt-2 text-[10px] font-mono text-gray-400">
                 <span>-2s</span>
