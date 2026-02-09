@@ -17,11 +17,11 @@ export const RACING_PEDAGOGY = [
 const generateMockGeminiMessage = (currentData) => {
     // Triggers relaxed to ensure AJ/Ross speak during simulation (Speed range: 80-160, Brake max: 40)
     if (currentData.speed > 135) {
-        return { agent: "AJ", role: "CREW CHIEF", msg: "Good pace. Keep the momentum up.", priority: "normal" };
+        return { agent: "AJ", role: "STRATEGY", msg: "Good pace. Keep the momentum up.", priority: "normal" };
     } else if (Math.abs(currentData.gLat) > 1.1) {
-        return { agent: "ROSS", role: "TELEMETRY", msg: "High lateral load detected. Smooth inputs.", priority: "normal" };
+        return { agent: "ROSS", role: "PHYSICS", msg: "High lateral load detected. Smooth inputs.", priority: "normal" };
     } else if (currentData.brake > 30) {
-        return { agent: "AJ", role: "CREW CHIEF", msg: "Braking zone. Compress the pedal.", priority: "high" };
+        return { agent: "AJ", role: "STRATEGY", msg: "Braking zone. Compress the pedal.", priority: "high" };
     } else {
         return null;
     }
@@ -58,15 +58,15 @@ export const getGeminiCoaching = async (telemetry, apiKey) => {
       ****************************************
 
       Select ONE persona to speak based on the telemetry:
-      1. AJ (Role: CREW CHIEF): Aggressive, strategic. Uses the PEDAGOGY to correct driving lines and habits.
-      2. ROSS (Role: TELEMETRY): Technical, calm. Reports on physics (G-force, tires).
-      3. GEMINI (Role: CORE): Analytical. Synthesizes data.
+      1. AJ (Role: STRATEGY): Aggressive, strategic. Uses the PEDAGOGY to correct driving lines and habits.
+      2. ROSS (Role: PHYSICS): Technical, calm. Reports on physics (G-force, tires).
+      3. GEMINI (Role: REASONING): Analytical. Synthesizes data.
 
       Input Telemetry: Speed (MPH), RPM, G-Force (Lateral).
       
       Output ONLY a raw JSON object (no markdown) with these keys:
       - "agent": "AJ", "ROSS", or "GEMINI"
-      - "role": "CREW CHIEF", "TELEMETRY", or "CORE"
+      - "role": "STRATEGY", "PHYSICS", or "REASONING"
       - "msg": A short (under 10 words) coaching command or observation. Prioritize Pedagogy advice if applicable.
       - "priority": "normal" or "high"
     `;
@@ -115,7 +115,7 @@ export const getGeminiCoaching = async (telemetry, apiKey) => {
             // Return special object to indicate system warning
             return {
                 agent: "SYSTEM",
-                role: "WARNING",
+                role: "STATUS",
                 msg: "Connection unstable. Switching to cached pedagogy.",
                 priority: "normal"
             };
@@ -144,7 +144,7 @@ export const getSessionDebrief = async (logs, speedHistory, apiKey) => {
     // 3. Prepare Prompt
     const debriefPrompt = `
       ACT AS: Lead Race Engineer (AJ).
-      TASK: Analyze the telemetry logs from the last session and provide a DETAILED, HIGH-LEVEL POST-RUN DEBRIEF.
+      TASK: Analyze the telemetry logs from last session and provide a DETAILED, HIGH-LEVEL POST-RUN DEBRIEF.
       
       SESSION STATS:
       Max Speed: ${maxSpeed.toFixed(0)} MPH
@@ -227,7 +227,7 @@ export const getNanoEvents = (telemetry) => {
         const eventMsg = events[Math.floor(Math.random() * events.length)];
         return {
             agent: "NANO",
-            role: "EDGE_TPU",
+            role: "PRECISION",
             msg: eventMsg,
             priority: "normal" // Nano is almost always normal priority (visual info)
         };
