@@ -865,11 +865,11 @@ export default function HighVelocityDashboard() {
           </div>
 
           {/* Main Center Stage - Expanded to fill dead space */}
-          <div className="flex-1 bg-white rounded-2xl border border-gray-200 p-8 flex items-center justify-between relative overflow-hidden pr-12 shadow-sm">
+          <div className="flex-1 bg-white rounded-2xl border border-gray-200 p-4 flex items-center justify-between relative overflow-hidden pr-4 shadow-sm">
             <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_0px,rgba(0,0,0,0.03)_1px)] bg-[size:100%_4px] pointer-events-none" />
 
             {/* G-Force - Upscaled */}
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-4 scale-125 origin-left ml-8">
               <h3 className="text-sm font-mono text-gray-400 uppercase tracking-widest">Lateral G</h3>
               <GForceMeter x={telemetry.gLat} y={telemetry.gLong} />
             </div>
@@ -901,7 +901,7 @@ export default function HighVelocityDashboard() {
             </div>
 
             {/* Pedals - Adjusted width and margin to fix cut-off */}
-            <div className="w-40 flex flex-col gap-8 mr-4 z-20">
+            <div className="w-40 flex flex-col gap-8 mr-8 z-20 scale-125 origin-right">
               <TelemetryBar label="Throttle" value={telemetry.throttle} max={100} color="bg-green-500" />
               <TelemetryBar label="Brake" value={telemetry.brake} max={100} color="bg-red-500" />
             </div>
@@ -1002,7 +1002,7 @@ export default function HighVelocityDashboard() {
           </div>
 
           {/* The Chat/Log Stream */}
-          <div className="flex-1 p-2 overflow-y-auto font-mono text-xs space-y-3 pr-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+          <div className="flex-1 p-2 overflow-y-auto font-mono text-sm space-y-3 pr-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
             {!isRunning && (
               <div className="text-gray-400 italic text-center mt-10">
                 {replayData ? 'CSV Data Loaded. Ready to Replay.' : 'Waiting for data stream initialization...'}
@@ -1010,7 +1010,7 @@ export default function HighVelocityDashboard() {
             )}
             {logs.map((log, i) => (
               <div key={i} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex gap-2 text-[10px] text-gray-400 mb-0.5 items-center">
+                <div className="flex gap-2 text-xs text-gray-400 mb-0.5 items-center">
                   <span>[{log.time}]</span>
                   <span className={`${log.color} font-bold`}>{log.agent}</span>
                   <span className="text-gray-500 text-[9px] border border-gray-200 rounded px-1 uppercase">{log.role}</span>
